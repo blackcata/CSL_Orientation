@@ -13,14 +13,14 @@ If a graduate freshman could draw these plots on themselves, the students are re
     - Understand and calculate climatology and anomaly
     - Remove linear trend from each dataset
     - Calculate linear-regression, correlation coefficients, composite.
-    - Calculate significance by using bootstrap method
+    - Significant Test by using p-value and bootstrap method
     
   - Drawing Various Plots (matplotlib.pyplot, basemap MODULES)
     - Draw x,y time-series plot 
     - Draw contour-map 
     - Draw subplots 
     - Draw scatter plots
-    - Save figures
+    - Save figures to specific format
   
 ### 2. Provided Data 
 Monthly SST (Sea Surface Temperature) Reanalysis data from the ERSST reanalysis was used for calculating climate statistics.
