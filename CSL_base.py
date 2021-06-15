@@ -311,7 +311,7 @@ def bootstrap( data1, data2 ):
     n1_dims = data1.shape; n1 = n1_dims[0]
     diff = data2.mean( axis = 0 ) - data1.mean( axis = 0 )
     
-    ny = n_dims[1]; nx = n_dims[2]
+    ny = n1_dims[1]; nx = n1_dims[2]
     boot = np.empty([nboot,ny,nx])
 
     n025 = round(nboot*0.025)
