@@ -4,7 +4,8 @@
 #                                                                                    #
 #          SCRIPT for basic functions to calculate statistics and draw plots         #
 #                                                                                    #
-#                                                               BY   : KM.Noh        #
+#                                                               BY   : 1.KM.Noh      #
+#                                                                      2.JH.Oh       #
 #                                                               DATE : 2021.06.09    #
 #                                                                                    #
 #------------------------------------------------------------------------------------#
@@ -188,6 +189,149 @@ def calc_reg(var,ts,dim):         return xr.corr(var,ts,dim=dim) * var.std(dim=d
 def calc_comp(var,ts,ind_ts,dim): return var[ind_ts,:].mean(dim=dim)
 
 
+## jhoh =============================================================================================
+
+## Functions for calculating correlation, regression, bootstrap
+
+def np2xr(xr_array,np_array):
+    n_dims = xr_array.shape
+    tmp = np_array.shape
+    
+    if (n_dims == tmp):
+        output = xr.DataArray( np_array, dims = xr_array.dims, coords = xr_array.coords, attrs = xr_array.attrs )
+    else:
+        print( 'Numpy array shape does not math with the Xarray' )
+    
+    return output
+
+def corr(array1,array2):
+    
+    n_dims = array2.shape
+    
+    # 1-dimension case
+    if ( len(n_dims) == 1):
+        
+        logic = np.logical_and( ~np.isnan(array1), ~np.isnan(array2) )
+        
+        if np.sum(logic) >= 3:
+            cor, p_value = stats.pearsonr( array1[logic], array2[logic] )
+        else:
+            cor, p_value = np.nan, np.nan
+    
+    # 2-dimension case
+    if ( len(n_dims) == 2):
+        
+        cor = np.empty(n_dims[1])
+        p_value = np.empty(n_dims[1])
+        
+        for i in range(n_dims[1]):
+        
+            logic = np.logical_and( ~np.isnan(array1[:]), ~np.isnan(array2[:,i]) )
+
+            if np.sum(logic) >= 3:
+                cor[i], p_value[i] = stats.pearsonr( array1[logic], array2[logic,i] )
+            else:
+                cor[i], p_value[i] = np.nan, np.nan
+    
+    # 3-dimension case
+    if ( len(n_dims) == 3):
+        
+        cor = np.empty([n_dims[1],n_dims[2]])
+        p_value = np.empty([n_dims[1],n_dims[2]])
+        
+        for i in range(n_dims[1]):
+            for j in range(n_dims[2]):
+        
+                logic = np.logical_and( ~np.isnan(array1[:]), ~np.isnan(array2[:,i,j]) )
+
+                if np.sum(logic) >= 3:
+                    cor[i,j], p_value[i,j] = stats.pearsonr( array1[logic], array2[logic,i,j] )
+                else:
+                    cor[i,j], p_value[i,j] = np.nan, np.nan
+    
+    return cor, p_value
+
+def regress(array1,array2):
+    
+    n_dims = array2.shape
+    
+    # 1-dimension case
+    if ( len(n_dims) == 1):
+        
+        logic = np.logical_and( ~np.isnan(array1), ~np.isnan(array2) )
+        
+        if np.sum(logic) >= 3:
+            reg, intercept, r_value, p_value, std_err = stats.linregress( array1[logic], array2[logic] )
+        else:
+            reg, intercept, r_value, p_value, std_err = np.nan, np.nan, np.nan, np.nan, np.nan
+    
+    # 2-dimension case
+    if ( len(n_dims) == 2):
+        
+        reg = np.empty(n_dims[1])
+        intercept = np.empty(n_dims[1])
+        r_value = np.empty(n_dims[1])
+        p_value = np.empty(n_dims[1])
+        std_err = np.empty(n_dims[1])
+        
+        for i in range(n_dims[1]):
+        
+            logic = np.logical_and( ~np.isnan(array1[:]), ~np.isnan(array2[:,i]) )
+
+            if np.sum(logic) >= 3:
+                reg[i], intercept[i], r_value[i], p_value[i], std_err[i] = stats.linregress( array1[logic], array2[logic,i] )
+            else:
+                reg[i], intercept[i], r_value[i], p_value[i], std_err[i] = np.nan, np.nan, np.nan, np.nan, np.nan
+    
+    # 3-dimension case
+    if ( len(n_dims) == 3):
+        
+        reg = np.empty([n_dims[1],n_dims[2]])
+        intercept = np.empty([n_dims[1],n_dims[2]])
+        r_value = np.empty([n_dims[1],n_dims[2]])
+        p_value = np.empty([n_dims[1],n_dims[2]])
+        std_err = np.empty([n_dims[1],n_dims[2]])
+        
+        for i in range(n_dims[1]):
+            for j in range(n_dims[2]):
+        
+                logic = np.logical_and( ~np.isnan(array1[:]), ~np.isnan(array2[:,i,j]) )
+
+                if np.sum(logic) >= 3:
+                    reg[i,j], intercept[i,j], r_value[i,j], p_value[i,j], std_err[i,j] = stats.linregress( array1[logic], array2[logic,i,j] )
+                else:
+                    reg[i,j], intercept[i,j], r_value[i,j], p_value[i,j], std_err[i,j] = np.nan, np.nan, np.nan, np.nan, np.nan
+    
+    return reg, p_value
+
+def bootstrap( data1, data2 ):
+    
+    nboot = 10000
+    n2_dims = data2.shape; n2 = n2_dims[0]
+    n1_dims = data1.shape; n1 = n1_dims[0]
+    diff = data2.mean( axis = 0 ) - data1.mean( axis = 0 )
+    
+    ny = n_dims[1]; nx = n_dims[2]
+    boot = np.empty([nboot,ny,nx])
+
+    n025 = round(nboot*0.025)
+    n975 = round(nboot*0.975)
+
+    for i in range(nboot):
+        random_id = np.random.choice( np.arange(0,n1,1), replace = True, size = n2 )
+        boot[i,:,:] = data1[random_id,:,:].mean( axis = 0 )
+
+    boot_sorted = np.sort( boot, axis = 0 )
+
+    boot_025 = boot_sorted[n025,:,:]
+    boot_975 = boot_sorted[n975,:,:]
+
+    ref_value = data2.mean( axis = 0 )
+    signi = np.where( (ref_value > boot_975) | (ref_value < boot_025), diff, np.nan )
+
+    return diff, signi
+
+#===================================================================================================
 
 ## Functions for basemap base in cyl projection
 def basemap_cyl(contour, axes, lat, lon, lon0):
