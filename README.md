@@ -7,7 +7,7 @@ If a graduate freshman could draw these plots on themselves, the students are re
 
 
 ### 1. Orientation Purpose
-  - Calculating Climate Statistics (xarray, scipy, sklearn)
+  - Calculating Climate Statistics (xarray, scipy, sklearn MODULES)
     - Read and write with the netCDF4 format data
     - Extract the index from given target area 
     - Understand and calculate climatology and anomaly
@@ -15,7 +15,7 @@ If a graduate freshman could draw these plots on themselves, the students are re
     - Calculate linear-regression, correlation coefficients, composite.
     - Calculate significance by using bootstrap method
     
-  - Drawing Various Plots[matplotlib.pyplot, basemap]
+  - Drawing Various Plots (matplotlib.pyplot, basemap MODULES)
     - Draw x,y time-series plot 
     - Draw contour-map 
     - Draw subplots 
