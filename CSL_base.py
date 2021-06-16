@@ -198,7 +198,9 @@ def np2xr(xr_array,np_array):
     tmp = np_array.shape
     
     if (n_dims == tmp):
-        output = xr.DataArray( np_array, dims = xr_array.dims, coords = xr_array.coords, attrs = xr_array.attrs )
+        output = xr.DataArray( np_array, 
+                               dims = xr_array.dims, 
+                               coords = xr_array.coords, attrs = xr_array.attrs )
     else:
         print( 'Numpy array shape does not math with the Xarray' )
     
@@ -304,7 +306,9 @@ def regress(array1,array2):
     
     return reg, p_value
 
-def bootstrap( data1, data2 ):
+def bootstrap( data1, data2, sig_lev ):
+    
+    tmp_sig_lev = (1-sig_lev/100.)
     
     nboot = 10000
     n2_dims = data2.shape; n2 = n2_dims[0]
@@ -314,8 +318,8 @@ def bootstrap( data1, data2 ):
     ny = n1_dims[1]; nx = n1_dims[2]
     boot = np.empty([nboot,ny,nx])
 
-    n025 = round(nboot*0.025)
-    n975 = round(nboot*0.975)
+    n_tail = round(nboot*(0+tmp_sig_lev/2.0))
+    n_head = round(nboot*(1-tmp_sig_lev/2.0))
 
     for i in range(nboot):
         random_id = np.random.choice( np.arange(0,n1,1), replace = True, size = n2 )
@@ -323,11 +327,11 @@ def bootstrap( data1, data2 ):
 
     boot_sorted = np.sort( boot, axis = 0 )
 
-    boot_025 = boot_sorted[n025,:,:]
-    boot_975 = boot_sorted[n975,:,:]
+    boot_tail = boot_sorted[n_tail,:,:]
+    boot_head = boot_sorted[n_head,:,:]
 
     ref_value = data2.mean( axis = 0 )
-    signi = np.where( (ref_value > boot_975) | (ref_value < boot_025), diff, np.nan )
+    signi = np.where( (ref_value > boot_head) | (ref_value < boot_tail), diff, np.nan )
 
     return diff, signi
 
